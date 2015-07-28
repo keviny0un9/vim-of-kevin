@@ -360,3 +360,49 @@ endif
 " 用于分割窗口的最大化与还原
 " 常规模式下按快捷键 <c-w>o 在最大化与还原间切换
 
+"Set mapleader
+let mapleader = ","
+
+if  g:iswindows
+    "Fast reloading of the _vimrc
+    map <silent> <leader>ss :source $VIM/_vimrc<cr>
+    "Fast editing of _vimrc
+    "开一个标签页来编辑vimrc
+    map <silent> <leader>ee :call SwitchToBuf("$VIM/_vimrc")<cr>
+    "When _vimrc is edited, reload it
+    autocmd! bufwritepost _vimrc source $VIM/_vimrc
+else
+    "Fast reloading of the .vimrc
+    map <silent> <leader>ss :source ~/.vimrc<cr>
+    "Fast editing of .vimrc
+    map <silent> <leader>ee :call SwitchToBuf("~/.vimrc")<cr>
+    "When .vimrc is edited, reload it
+    autocmd! bufwritepost .vimrc source ~/.vimrc
+endif
+"open file with tab 
+function! SwitchToBuf(filename)
+    "let fullfn = substitute(a:filename, "^\\~/", $HOME . "/", "")
+    " find in current tab
+    let bufwinnr = bufwinnr(a:filename)
+    if bufwinnr != -1
+        exec bufwinnr . "wincmd w"
+        return
+    else
+        " find in each tab
+        tabfirst
+        let tab = 1
+        while tab <= tabpagenr("$")
+            let bufwinnr = bufwinnr(a:filename)
+            if bufwinnr != -1
+                exec "normal " . tab . "gt"
+                exec bufwinnr . "wincmd w"
+                return
+            endif
+            tabnext
+            let tab = tab + 1
+        endwhile
+        " not exist, new tab
+        exec "tabnew " . a:filename
+    endif
+endfunction
+
